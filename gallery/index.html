@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gallery — Easel Ultimate</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#1f2329;background:#fff}
+nav{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:58px;border-bottom:1px solid #e2e5e9;background:#fff;position:sticky;top:0;z-index:10}
+.logo{display:flex;align-items:center;gap:9px;font-size:18px;font-weight:700}
+.logo svg{width:22px;height:20px}
+.links{display:flex;gap:22px}
+.links a{color:#3c434c;font-size:13.5px;font-weight:500;text-decoration:none}
+.links a:hover{color:#5090c7}
+.btn{border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;text-decoration:none;display:inline-block}
+.btn-p{background:#198754;color:#fff}
+.btn-s{background:#fff;color:#3c434c;border:1px solid #e2e5e9}
+.head{background:linear-gradient(180deg,#f7f9fb,#edf1f6);padding:48px 24px;text-align:center}
+.head h1{font-size:32px;font-weight:800;margin-bottom:8px}
+.head p{color:#59636f;font-size:14.5px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;max-width:1100px;margin:36px auto 60px;padding:0 24px}
+.card{background:#fff;border:1px solid #e2e5e9;border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.card .art{height:150px;background:#efe9de;display:flex;align-items:center;justify-content:center}
+.card .art svg{width:100%;height:100%}
+.card .info{padding:14px}
+.card .info b{font-size:14.5px;display:block;margin-bottom:4px}
+.card .info span{font-size:12.5px;color:#667080}
+.card .actions{display:flex;gap:8px;padding:0 14px 14px}
+footer{padding:24px;text-align:center;color:#8a919c;font-size:12.5px;border-top:1px solid #e2e5e9}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo"><svg viewBox="0 36 360 288"><path fill="#198754" d="M266.6,240.7h30.2V84h-99.2l-11.9-31.6c-1.7-3.6-5.3-6.1-9-6.1h-1.7c-4.4,0-7.9,2.6-9,6.1l-11.9,31.7H55.1v156.7h30.2v11.4h5.4L73,300c-1.7,3.6,0,7.9,4.4,9.9c4.4,1.7,9.6,0.4,10.6-4l9-23.4h158.6l9,23.4c1.7,4.4,7,6.1,10.6,4.2c3.6-1.7,5.3-6.3,3.6-10l-17.7-47.8h6.1V241h-0.3v-0.3H266.6z M176.1,66.7l6.3,17.3h-12.9L176.1,66.7z M66.6,95.4h218.9v134.1H66.6V95.4z M249.4,265.1H102.7l4.8-13.2h137.2L249.4,265.1z"/></svg>Easel Ultimate</div>
+  <div class="links"><a href="../">Home</a><a href="help/">Help</a><a href="about/">About</a></div>
+  <a class="btn btn-p" href="../app/">Open app</a>
+</nav>
+
+<header class="head">
+  <h1>Gallery</h1>
+  <p>Sample designs made in Easel Ultimate — download a <b>.easel</b> file, then open it in the app with <b>Project → Open design file</b>.</p>
+</header>
+
+<div class="grid">
+  <div class="card">
+    <div class="art"><svg viewBox="0 0 200 150"><rect width="200" height="150" fill="#e2c48e"/><polygon points="50,50 80,26 110,50 80,74" fill="#5090c7" opacity=".85"/><polygon points="150,50 180,26 210,50 180,74" fill="#5090c7" opacity=".85"/><polygon points="50,150 80,126 110,150 80,174" fill="#5090c7" opacity=".85"/><polygon points="150,150 180,126 210,150 180,174" fill="#5090c7" opacity=".85"/></svg></div>
+    <div class="info"><b>Hex Coaster Set</b><span>4 hex pockets · Birch · 200 × 200 mm</span></div>
+    <div class="actions"><a class="btn btn-p" href="designs/coaster-set.easel" download>⬇ .easel</a><a class="btn btn-s" href="../app/">Open in app</a></div>
+  </div>
+  <div class="card">
+    <div class="art"><svg viewBox="0 0 300 150"><rect width="300" height="150" fill="#e6d5ae"/><rect x="30" y="122" width="240" height="16" fill="#5090c7"/><text x="150" y="78" font-size="34" font-family="Arial" font-weight="bold" text-anchor="middle" fill="#5090c7">WELCOME</text></svg></div>
+    <div class="info"><b>Welcome Sign</b><span>V-carve text + trim line · Birch · 304.8 × 152.4 mm</span></div>
+    <div class="actions"><a class="btn btn-p" href="designs/sign.easel" download>⬇ .easel</a><a class="btn btn-s" href="../app/">Open in app</a></div>
+  </div>
+  <div class="card">
+    <div class="art"><svg viewBox="0 0 200 100"><rect width="200" height="100" fill="#ccb088"/><rect x="6" y="6" width="188" height="88" rx="14" fill="none" stroke="#5090c7" stroke-width="4"/><text x="100" y="58" font-size="28" font-family="Impact" text-anchor="middle" fill="#5090c7">ISAAC</text></svg></div>
+    <div class="info"><b>Name Plate</b><span>Rounded pocket + engraved name · MDF · 203.2 × 101.6 mm</span></div>
+    <div class="actions"><a class="btn btn-p" href="designs/name-plate.easel" download>⬇ .easel</a><a class="btn btn-s" href="../app/">Open in app</a></div>
+  </div>
+</div>
+
+<footer>Easel Ultimate — free CNC design app · gallery designs are yours to remix</footer>
+</body>
+</html>
