@@ -1413,7 +1413,7 @@ var T={
     var pathPts=[];
     segs.forEach(function(s){
       if(s.type==='outline'&&s.pts)s.pts.forEach(function(p){pathPts.push(p);});
-      if(s.type==='pocket'&&s.lines)s.lines.forEach(function(l){pathPts.push(l[0],l[1]);});
+      if(s.type==='pocket'&&s.lines)s.lines.forEach(function(l){pathPts.push({x:l[0][0],y:l[0][1]},{x:l[1][0],y:l[1][1]});});
       if(s.type==='drill')pathPts.push({x:s.x,y:s.y});
     });
     var plen=0,cums=[];
@@ -2567,6 +2567,7 @@ S.selftest=function(){
   var pat0=S.shapes.length;W.pattern('checker');t('checker pattern adds',S.shapes.length>pat0+10);
   W.pattern('rings');t('rings adds circles',S.shapes.some(function(x){return x.type==='circle';}));
   W.pattern('herring');t('herring adds rot rects',S.shapes.some(function(x){return x.type==='rect'&&x.rot!==0;}));
+  W.pattern('stars');t('star field adds stars',S.shapes.some(function(x){return x.type==='star';}));
   W.penTool();t('pen tool sets',S.state.tool==='pen');U.tool('select');
   var svgTest='<svg viewBox="0 0 100 100"><rect x="10" y="10" width="40" height="30"/><circle cx="70" cy="40" r="15"/><path d="M5 80 L95 80 L50 95 Z"/></svg>';
   var vp=W.svgPathPts('M5 80 L95 80 L50 95 Z');
@@ -2599,7 +2600,7 @@ S.selftest=function(){
   t('text tool places',S.shapes.some(function(x){return x.type==='text';}));
   U.tool('select');
   var rr=$('gridSvg').getBoundingClientRect();
-  var tsx=S.state.pan.x+25*S.state.zoom,tsy=S.state.pan.y+25*S.state.zoom;
+  var tsx=S.state.pan.x+30*S.state.zoom,tsy=S.state.pan.y+20*S.state.zoom;
   cdown(tsx,tsy);
   t('canvas select shape',S.state.sel===ts.id);
   var cxm0=ts.cx;
@@ -2652,6 +2653,7 @@ S.selftest=function(){
   clk('#shareModal .x');
   S.state.sim=true;S.state.simP=0.5;T.drawSim();
   t('sim playhead on path',/ff5f57/.test($('simCanvas').innerHTML));
+  t('sim no NaN coords',!$('simCanvas').innerHTML.includes('NaN'));
   S.state.sim=false;S.state.simP=0;T.drawSim();
   W.logout();
   t('logout to landing2',document.getElementById('view-landing').classList.contains('on'));
