@@ -189,8 +189,8 @@ input,select{font-family:inherit;font-size:13px}
 /* carve / gcode modal */
 #modal{position:fixed;inset:0;background:rgba(20,22,26,.55);display:none;align-items:center;justify-content:center;z-index:100}
 #modal.open{display:flex}
-#setupModal,#libModal,#shareModal,#notesModal,#aboutModal,#settingsModal,#propsModal{position:fixed;inset:0;background:rgba(20,22,26,.55);display:none;align-items:center;justify-content:center;z-index:110}
-#setupModal.open,#libModal.open,#shareModal.open,#notesModal.open,#aboutModal.open,#settingsModal.open,#propsModal.open{display:flex}
+#setupModal,#libModal,#shareModal,#notesModal,#aboutModal,#settingsModal,#propsModal,#authModal{position:fixed;inset:0;background:rgba(20,22,26,.55);display:none;align-items:center;justify-content:center;z-index:110}
+#setupModal.open,#libModal.open,#shareModal.open,#notesModal.open,#aboutModal.open,#settingsModal.open,#propsModal.open,#authModal.open{display:flex}
 .modal-box{background:#fff;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:680px;max-width:94vw;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
 .modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line)}
 .modal-head h2{font-size:17px}
@@ -1010,7 +1010,7 @@ var U={
   cutMode(m,el){document.querySelectorAll('#cutMode span').forEach(function(x){x.classList.remove('active');});el.classList.add('active');S.state.cutMode=m;
     if(m==='manual'){U.toast('Manual mode: edit feeds directly');}else{U.toast('Auto: Easel-verified defaults applied');}T.estimate();},
   setFill(f){document.querySelectorAll('#optOffset,#optRaster').forEach(function(x){x.classList.remove('active');});$('opt'+f[0].toUpperCase()+f.slice(1)).classList.add('active');S.state.fill=f;T.estimate();},
-  setPlunge(p){document.querySelectorAll('#optVert,#optRamp').forEach(function(x){x.classList.remove('active');});$('opt'+p[0].toUpperCase()+p.slice(1)).classList.add('active');S.state.plungeType=p;T.estimate();},
+  setPlunge(p){document.querySelectorAll('#optVert,#optRamp').forEach(function(x){x.classList.remove('active');});var pid=p==='vertical'?'optVert':'optRamp';$(pid).classList.add('active');S.state.plungeType=p;T.estimate();},
   setDir(d){document.querySelectorAll('[id^=optDir]').forEach(function(x){x.classList.remove('active');});$('optDir'+d[0].toUpperCase()+d.slice(1)).classList.add('active');S.state.dir=d;T.estimate();},
   commit(a,b,c){
     var cat=null,el,f;
@@ -2440,6 +2440,15 @@ S.selftest=function(){
   clk('#bitBtn');
   t('btn Cut Settings',clk('#cutSettingsBtn')&&$('cutSettingsBtn').classList.contains('open'));
   clk('#cutSettingsBtn');
+  t('btn Add bit',clk('#addBitBtn'));
+  t('cut mode manual',clk('#cutMode span[data-m="manual"]')&&S.state.cutMode==='manual');
+  t('fill raster',clk('#optRaster')&&S.state.fill==='raster');
+  t('plunge ramp',clk('#optRamp')&&S.state.plungeType==='ramp');
+  t('dir climb',clk('#optDirClimb')&&S.state.dir==='climb');
+  U.setFill('offset');U.setPlunge('vertical');U.setDir('default');U.cutMode('auto',$('cutMode').querySelector('[data-m="auto"]'));
+  $('inBoardW').value='300';$('inBoardW').dispatchEvent(new Event('change'));
+  t('board input commit',Math.abs(S.state.boardW-300)<0.01);
+  $('inBoardW').value='304.8';$('inBoardW').dispatchEvent(new Event('change'));
   t('btn Shapes menu',clk('#toolShapes')&&$('ddShapes').style.display!=='none');
   clk('#toolShapes');
   var n0=S.shapes.length;clk('#toolDrill');t('btn Drill adds hole',S.shapes.length===n0+1);
@@ -2505,14 +2514,28 @@ S.selftest=function(){
   var cxm0=ts.cx;
   cmove(tsx+40,tsy);cup();
   t('canvas move shape',Math.abs(ts.cx-cxm0)>5);
-  // ── accounts & sharing ──
+  // ── accounts & sharing (real button clicks on the landing page) ──
+  t('landing nav has signup/login',!!document.querySelector('#view-landing .ln-cta button:first-child')&&!!document.querySelector('#view-landing .ln-cta button:last-child'));
+  clk('#view-landing .ln-cta button:last-child');
+  t('Log In button opens auth modal',$('authModal').classList.contains('open')&&getComputedStyle($('authModal')).display==='flex');
+  clk('#authModal .x');
+  clk('#view-landing .ln-cta button:first-child');
+  t('Sign up button opens auth modal',$('authModal').classList.contains('open'));
   try{var accs=JSON.parse(localStorage.getItem('euAccounts')||'[]');accs=accs.filter(function(a){return a.email!=='test@maker.dev';});localStorage.setItem('euAccounts',JSON.stringify(accs));}catch(e){}
-  W.openAuth('register');t('auth modal opens',$('authModal').classList.contains('open'));
   $('authName').value='Test Maker';$('authEmail').value='test@maker.dev';$('authPass').value='pass1234';
   W.authSubmit();
   t('register logs in',!$('authModal').classList.contains('open')&&$('view-home').classList.contains('on'));
   t('home shows account email',$('homeEmail').textContent.indexOf('test@maker.dev')>=0);
+  W.logout();
+  W.openAuth('login');
+  $('authLoginEmail').value='test@maker.dev';$('authLoginPass').value='wrongpass';
+  W.authSubmit();
+  t('login rejects wrong password',$('authStatus').textContent.indexOf('Wrong')>=0&&$('authModal').classList.contains('open'));
+  $('authLoginPass').value='pass1234';
+  W.authSubmit();
+  t('login works',$('view-home').classList.contains('on'));
   clk('#shareBtn');t('share modal',$('shareModal').classList.contains('open'));
+  t('share has all actions',document.querySelectorAll('#shareModal button').length>=5);
   clk('#shareModal .x');
   S.state.sim=true;S.state.simP=0.5;T.drawSim();
   t('sim playhead on path',/ff5f57/.test($('simCanvas').innerHTML));
@@ -2548,7 +2571,7 @@ S.selftest=function(){
   V.draw();
   return out.join(' | ')+(window.__ck&&window.__ck.length?' || CLKERR: '+window.__ck.join(' ;; '):'')+'  => '+ok+' ok, '+fail+' fail';
 };
-try{window.__st=S.selftest();}catch(e){window.__st='SELFTEST ERROR: '+e.message;}
+try{window.__st=S.selftest();}catch(e){window.__st='SELFTEST ERROR: '+e.message+' @'+(e.stack?e.stack.split('\n')[1]:'?');}
 try{document.title=document.title.replace(/\|.*$/,'')+' | '+window.__st;}catch(e){}
 </script>
 </body>
