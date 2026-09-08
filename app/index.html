@@ -1709,8 +1709,28 @@ var Z=(function(){
     {n:'CNC4NEWBIE Carve King',w:406.4,h:406.4},
     {n:'Custom GRBL machine',w:406.4,h:406.4}
   ];
-  function load(){try{var d=JSON.parse(localStorage.getItem('easelUltimateProjects')||'[]');if(Array.isArray(d))projs=d;}catch(e){projs=[];}}
-  function save(){try{localStorage.setItem('easelUltimateProjects',JSON.stringify(projs));}catch(e){}}
+  function pkey(){var s=null;try{s=JSON.parse(localStorage.getItem('euSession')||'null');}catch(e){}return s&&s.email?'euProjects:'+s.email:'euProjects:guest';}
+  function load(){
+    var k=pkey();
+    try{var d=JSON.parse(localStorage.getItem(k)||'[]');projs=Array.isArray(d)?d:[];}catch(e){projs=[];}
+    // migrate the old shared store once (into whichever store loads first)
+    try{
+      var legacy=localStorage.getItem('easelUltimateProjects');
+      if(legacy&&!projs.length){
+        var ld=JSON.parse(legacy);
+        if(Array.isArray(ld)&&ld.length){projs=ld;save();}
+        localStorage.removeItem('easelUltimateProjects');
+      }
+    }catch(e){}
+    // designs follow you: if this (account) store is empty, pull in guest projects
+    try{
+      if(k!=='euProjects:guest'&&!projs.length){
+        var g=JSON.parse(localStorage.getItem('euProjects:guest')||'[]');
+        if(Array.isArray(g)&&g.length){projs=g;save();}
+      }
+    }catch(e){}
+  }
+  function save(){try{localStorage.setItem(pkey(),JSON.stringify(projs));}catch(e){}}
   function view(v){['landing','home','ws'].forEach(function(x){var el=$('view-'+x);if(el)el.classList.toggle('on',x===v);});if(v!=='ws'){var st=$('saveStatus');if(st)st.textContent='';}else{try{V.fit();}catch(e){}}window.scrollTo(0,0);}
   function curProj(){for(var i=0;i<projs.length;i++)if(projs[i].id===cur)return projs[i];return null;}
   function age(ts){if(!ts)return '';var d=Date.now()-ts;if(d<6e4)return 'just now';if(d<36e5)return Math.floor(d/6e4)+' min ago';if(d<864e5)return Math.floor(d/36e5)+' hr ago';if(d<6048e5)return Math.floor(d/864e5)+' days ago';var dd=new Date(ts);return (dd.getMonth()+1)+'/'+dd.getDate()+'/'+String(dd.getFullYear()).slice(2);}
@@ -1769,8 +1789,8 @@ var Z=(function(){
       g.appendChild(c);
     });
   }
-  function login(){view('home');renderHome();var em=$('homeEmail');if(em){var s=(typeof W!=='undefined'&&W.syncUser)?W.syncUser():null;em.textContent=s?s.email:'Guest';}}
-  function logout(){view('landing');}
+  function login(){load();view('home');renderHome();var em=$('homeEmail');if(em){var s=(typeof W!=='undefined'&&W.syncUser)?W.syncUser():null;em.textContent=s?s.email:'Guest';}}
+  function logout(){load();view('landing');}
   function home(){view('home');renderHome();}
   function about(){U.about();}
   function dismissBanner(){var b=$('homeBanner');if(b)b.style.display='none';try{localStorage.setItem('euBanner','1');}catch(e){}}
@@ -2548,6 +2568,7 @@ S.selftest=function(){
   $('authLoginEmail').value='isaac_cs.chan@online.island.edu.hk';$('authLoginPass').value='Isaac1804';
   W.authSubmit();
   t('seeded owner login works',$('view-home').classList.contains('on')&&$('homeEmail').textContent.indexOf('isaac_cs.chan@online.island.edu.hk')>=0);
+  t('account store isolated',JSON.parse(localStorage.getItem('euProjects:isaac_cs.chan@online.island.edu.hk')||'[]').length===0);
   clk('#shareBtn');t('share modal',$('shareModal').classList.contains('open'));
   t('share has all actions',document.querySelectorAll('#shareModal button').length>=5);
   clk('#shareModal .x');
@@ -2573,6 +2594,7 @@ S.selftest=function(){
   t('project created',!$('setupModal').classList.contains('open')&&$('view-ws').classList.contains('on')&&Math.abs(S.state.boardW-300)<0.01);
   Z.home();
   t('home shows project card',document.querySelectorAll('#projectGrid .proj-card').length>=1);
+  t('projects saved in active store',JSON.parse(localStorage.getItem('euProjects:guest')||'[]').length>=1);
   var pr0=Z.__ids().length;
   W.dupProject();
   t('copy project',Z.__ids().length===pr0+1);
