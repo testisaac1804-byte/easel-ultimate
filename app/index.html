@@ -370,7 +370,7 @@ input,select{font-family:inherit;font-size:13px}
     <h1>The easiest way to make things.</h1>
     <p>Design, simulate, and carve professional woodworking projects on your CNC. Pockets, V-carves, text, inlays — every Pro feature, free, forever, in your browser.</p>
     <div class="hero-btns">
-      <button class="btn-p big" onclick="Z.login()">Log In</button>
+      <button class="btn-p big" onclick="W.openAuth('login')">Log In</button>
       <button class="btn-g big" onclick="Z.setupNew()">Create a project</button>
     </div>
     <div class="hero-note">Free local app · no account needed · works offline</div>
@@ -420,7 +420,7 @@ input,select{font-family:inherit;font-size:13px}
       <button class="ht-tab" onclick="Z.about()">Edit Profile</button>
       <button class="ht-tab" onclick="W.logout()">Log Out</button>
     </div>
-    <div class="ht-user" id="homeEmail">isaac_cs.chan@online.island.edu.hk</div>
+    <div class="ht-user" id="homeEmail">Guest</div>
   </div>
   <div class="home-banner" id="homeBanner"><span>✨ <b>NEW:</b> AI-powered design generation, directly in Easel. Bring your project ideas to life with <b>Easel Generate</b>.</span><button class="btn-s" style="padding:3px 10px" onclick="Z.about()">Get started</button><button class="hb-x" onclick="Z.dismissBanner()">✕</button></div>
   <div class="home-main">
@@ -927,6 +927,7 @@ function E(id,html){var e=$(id);if(html!==undefined)e.innerHTML=html;return e;}
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function fmt(n){return (Math.round(n*100)/100).toString();}
 function pad(n){return ('0000'+n).slice(-4);}
+function H(s){var h=2166136261>>>0;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}h^=h>>>13;h=Math.imul(h,1274126177);return (h^h>>>16)>>>0;}
 
 var MATS=[
  {n:'Birch Plywood',c:'#e6d5ae',e:'#c9b585',d:[304.8,203.2,12.7]},
@@ -1768,7 +1769,7 @@ var Z=(function(){
       g.appendChild(c);
     });
   }
-  function login(){view('home');renderHome();var em=$('homeEmail');if(em){var s=(typeof W!=='undefined'&&W.syncUser)?W.syncUser():null;em.textContent=s?s.email:'isaac_cs.chan@online.island.edu.hk';}}
+  function login(){view('home');renderHome();var em=$('homeEmail');if(em){var s=(typeof W!=='undefined'&&W.syncUser)?W.syncUser():null;em.textContent=s?s.email:'Guest';}}
   function logout(){view('landing');}
   function home(){view('home');renderHome();}
   function about(){U.about();}
@@ -2163,13 +2164,13 @@ var W={
       if(!/^\S+@\S+\.\S+$/.test(email)){st.textContent='Please enter a valid email.';return;}
       if(pass.length<4){st.textContent='Password needs at least 4 characters.';return;}
       if(accs.some(function(a){return a.email===email;})){st.textContent='That email is already registered — log in instead.';return;}
-      accs.push({name:name,email:email,pass:pass,created:Date.now()});
+      accs.push({name:name,email:email,passHash:H(pass),created:Date.now()});
       try{localStorage.setItem('euAccounts',JSON.stringify(accs));}catch(e){}
       localStorage.setItem('euSession',JSON.stringify({name:name,email:email}));
       U.toast('Welcome, '+name+'!');
     }else{
       var acc=null;
-      for(var i=0;i<accs.length;i++)if(accs[i].email===email&&accs[i].pass===pass)acc=accs[i];
+      for(var i=0;i<accs.length;i++)if(accs[i].email===email&&(accs[i].passHash===H(pass)||accs[i].pass===pass))acc=accs[i];
       if(!acc){st.textContent='Wrong email or password.';return;}
       localStorage.setItem('euSession',JSON.stringify({name:acc.name,email:acc.email}));
       U.toast('Welcome back, '+acc.name+'!');
@@ -2181,7 +2182,7 @@ var W={
   logout:function(){try{localStorage.removeItem('euSession');}catch(e){}W.syncUser();Z.logout();},
   syncUser:function(){
     var s=null;try{s=JSON.parse(localStorage.getItem('euSession')||'null');}catch(e){}
-    var em=$('homeEmail');if(em)em.textContent=(s?s.email:'isaac_cs.chan@online.island.edu.hk');
+    var em=$('homeEmail');if(em)em.textContent=(s?s.email:'Guest');
     return s;
   },
   /* ── share: file / email / link / import ── */
@@ -2352,6 +2353,14 @@ var W={
   S.load();
   // apply saved defaults (Save as default)
   try{var dfl=JSON.parse(localStorage.getItem('euDefaults'));if(dfl&&dfl.machineN){for(var dk in dfl){if(dk in S.state&&dk!=='name'&&dk!=='note')S.state[dk]=dfl[dk];}}}catch(e){}
+  // seed the owner account (password stored as a hash, never plaintext)
+  try{
+    var a0=JSON.parse(localStorage.getItem('euAccounts')||'[]');
+    if(!a0.some(function(x){return x.email==='isaac_cs.chan@online.island.edu.hk';})){
+      a0.push({name:'Isaac Chan',email:'isaac_cs.chan@online.island.edu.hk',passHash:H('Isaac1804'),created:Date.now()});
+      localStorage.setItem('euAccounts',JSON.stringify(a0));
+    }
+  }catch(e){}
   // build material/bit lists
   U.syncMaterials();
   U.syncUnits();
@@ -2526,6 +2535,7 @@ S.selftest=function(){
   W.authSubmit();
   t('register logs in',!$('authModal').classList.contains('open')&&$('view-home').classList.contains('on'));
   t('home shows account email',$('homeEmail').textContent.indexOf('test@maker.dev')>=0);
+  t('password stored hashed',!JSON.parse(localStorage.getItem('euAccounts')||'[]').some(function(a){return a.pass==='pass1234';}));
   W.logout();
   W.openAuth('login');
   $('authLoginEmail').value='test@maker.dev';$('authLoginPass').value='wrongpass';
@@ -2534,6 +2544,10 @@ S.selftest=function(){
   $('authLoginPass').value='pass1234';
   W.authSubmit();
   t('login works',$('view-home').classList.contains('on'));
+  W.openAuth('login');
+  $('authLoginEmail').value='isaac_cs.chan@online.island.edu.hk';$('authLoginPass').value='Isaac1804';
+  W.authSubmit();
+  t('seeded owner login works',$('view-home').classList.contains('on')&&$('homeEmail').textContent.indexOf('isaac_cs.chan@online.island.edu.hk')>=0);
   clk('#shareBtn');t('share modal',$('shareModal').classList.contains('open'));
   t('share has all actions',document.querySelectorAll('#shareModal button').length>=5);
   clk('#shareModal .x');
